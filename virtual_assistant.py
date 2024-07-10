@@ -2,7 +2,7 @@ import streamlit as st
 import pyttsx3
 import datetime
 import speech_recognition as sr
-import wikipedia
+import wikipediaapi
 import webbrowser
 import os
 import pyautogui
@@ -41,13 +41,19 @@ def sprec():
 
 def handle_query(global_query):
     if global_query:
+        wiki_wiki = wikipediaapi.Wikipedia('en')
         if "wikipedia" in global_query:
             speak("Searching on Wikipedia...")
             global_query = global_query.replace("wikipedia", "")
-            output = wikipedia.summary(global_query, sentences=2)
-            st.write(output)
-            speak("According to Wikipedia")
-            speak(output)
+            page = wiki_wiki.page(global_query)
+            if page.exists():
+                output = page.summary[:500]  # Get the first 500 characters of the summary
+                st.write(output)
+                speak("According to Wikipedia")
+                speak(output)
+            else:
+                st.write("Wikipedia page not found")
+                speak("Wikipedia page not found")
         elif "open" in global_query:
             global_query = global_query.replace("open", "")
             speak(f"Opening {global_query}")
