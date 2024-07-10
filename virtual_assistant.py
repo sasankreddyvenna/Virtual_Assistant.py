@@ -2,94 +2,107 @@ import streamlit as st
 import pyttsx3
 import datetime
 import speech_recognition as sr
-import wikipediaapi
+import wikipedia
 import webbrowser
 import os
+import pyautogui
 
-def speak(text):
-    engine = pyttsx3.init()
-    engine.say(text)
-    engine.runAndWait()
+def speak(var):
+    tts = pyttsx3.init()
+    tts.say(var)
+    tts.runAndWait()
 
 def wish():
-    current_time = datetime.datetime.now().hour
-    if 0 <= current_time < 12:
-        speak("Good Morning")
-    elif 12 <= current_time < 16:
-        speak("Good Afternoon")
+    time_ = datetime.datetime.now().hour
+    if 0 <= time_ < 12:
+        speak("Good Morning Sasank")
+    elif 12 <= time_ < 16:
+        speak("Good Afternoon Sasank")
     else:
-        speak("Good Evening")
-    speak("How can I help you?")
+        speak("Good Evening Sasank")
+    speak("How can I help you")
 
-def recognize_speech():
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
+def sprec():
+    rec = sr.Recognizer()
+    rec.pause_threshold = 1
+    with sr.Microphone() as roh:
         st.write("Listening...")
-        audio = recognizer.listen(source)
-    
+        aud = rec.listen(roh)
     try:
         st.write("Recognizing...")
-        query = recognizer.recognize_google(audio)
+        query = rec.recognize_google(aud)
         query = query.lower()
         st.write(f"You said: {query}")
         return query
-    except sr.UnknownValueError:
+    except:
         st.write("Sorry, I didn't get that")
         speak("Sorry, I didn't get that")
-    except sr.RequestError:
-        st.write("Sorry, I'm having trouble with my speech recognition")
-        speak("Sorry, I'm having trouble with my speech recognition")
+        return None
 
-def handle_query(query):
-    if query:
-        wiki_wiki = wikipediaapi.Wikipedia('en')
-        if "wikipedia" in query:
+def handle_query(global_query):
+    if global_query:
+        if "wikipedia" in global_query:
             speak("Searching on Wikipedia...")
-            query = query.replace("wikipedia", "")
-            page = wiki_wiki.page(query)
-            if page.exists():
-                summary = page.summary[:500]  # Limit summary to 500 characters
-                st.write(summary)
-                speak("According to Wikipedia")
-                speak(summary)
-            else:
-                st.write("Wikipedia page not found")
-                speak("Wikipedia page not found")
-        elif "open" in query:
-            query = query.replace("open", "")
-            speak(f"Opening {query}")
-            webbrowser.open(f"http://www.{query}.com")
-        elif "the time" in query:
-            current_time = datetime.datetime.now().strftime("%H:%M")
-            st.write(f"It's {current_time}")
-            speak(f"It's {current_time}")
-        elif "play music" in query or 'play songs' in query:
-            songs_dir = "C:\\Users\\USER\\Music"  # Replace with your music directory
-            if os.path.exists(songs_dir):
-                songs = os.listdir(songs_dir)
-                if songs:
-                    os.startfile(os.path.join(songs_dir, songs[0]))  # Play the first song
-                else:
-                    st.write("No music files found")
-                    speak("No music files found")
-            else:
-                st.write("Music directory not found")
-                speak("Music directory not found")
-        elif "shutdown" in query:
-            speak("Shutting down")
-            st.stop()
-        else:
-            st.write("Command not recognized")
-            speak("Command not recognized")
+            global_query = global_query.replace("wikipedia", "")
+            output = wikipedia.summary(global_query, sentences=2)
+            st.write(output)
+            speak("According to Wikipedia")
+            speak(output)
+        elif "open" in global_query:
+            global_query = global_query.replace("open", "")
+            speak(f"Opening {global_query}")
+            webbrowser.open(f"http://www.{global_query}.com")
+        elif "the time" in global_query:
+            hour = datetime.datetime.now().hour
+            minute = datetime.datetime.now().minute
+            speak(f"It's {hour} {minute}")
+        elif "play music on spotify" in global_query:
+            webbrowser.open_new("https://open.spotify.com/")
+        elif "play music" in global_query or 'play songs' in global_query:
+            songs = os.listdir("C:\\Users\\USER\\Music")
+            os.startfile(os.path.join("C:\\Users\\USER\\Music", songs[1]))
+        elif "launch vs code" in global_query or "launch visual studio code" in global_query:
+            speak("Opening VS Code")
+            os.startfile("C:\\Users\\USER\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")
+        elif "launch calculator" in global_query:
+            speak("Opening Calculator")
+            os.startfile('calc.exe')
+        elif "google" in global_query:
+            txt = global_query.replace("google", "").strip()
+            webbrowser.open(f"http://www.google.com/search?q={txt}")
+        elif "launch notepad" in global_query:
+            speak("Opening Notepad")
+            os.startfile('notepad.exe')
+            speak("Do you want to type anything?")
+            response = sprec()
+            if response and ("yes" in response or "sure" in response):
+                pyautogui.hotkey('win', 'h')
+        elif "launch settings" in global_query:
+            pyautogui.hotkey('win', 'i')
+        elif "launch explorer" in global_query or "launch my computer" in global_query or "launch this pc" in global_query:
+            pyautogui.hotkey('win', 'e')
+        elif "launch task manager" in global_query:
+            pyautogui.hotkey('ctrl', 'shift', 'escape')
+        elif "who are you" in global_query or "what can you do" in global_query:
+            speak("I am your virtual assistant. I can open apps, search for info, play music, and more. I am developed by Sasank.")
+        elif "shutdown" in global_query:
+            shutdown()
+
+def shutdown():
+    speak("Shutting down")
+    st.stop()
 
 def main():
-    st.title("Virtual Assistant")
-    st.write("How can I assist you today?")
-
+    st.title("Virtual Assistant by Sasank")
+    st.write("How can I help you?")
+    
     if st.button("Run Assistant"):
         wish()
-        query = recognize_speech()
-        handle_query(query)
+        global_query = sprec()
+        handle_query(global_query)
+    
+    if st.button("Shut down"):
+        shutdown()
 
 if __name__ == "__main__":
     main()
