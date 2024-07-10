@@ -20,7 +20,7 @@ def wish():
         speak("Good Afternoon Sasank")
     else:
         speak("Good Evening Sasank")
-    speak("How can I help you")
+    speak("How can I help you?")
 
 def sprec():
     rec = sr.Recognizer()
