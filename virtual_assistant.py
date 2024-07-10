@@ -6,6 +6,7 @@ import wikipediaapi
 import webbrowser
 import os
 
+# Check if pyautogui can be imported
 try:
     import pyautogui
     pyautogui_available = True
