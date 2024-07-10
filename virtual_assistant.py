@@ -5,7 +5,8 @@ import speech_recognition as sr
 import wikipedia
 import webbrowser
 import os
-import pyautogui
+import subprocess
+import keyboard  # For simulating keyboard inputs
 
 def speak(var):
     tts = pyttsx3.init()
@@ -49,9 +50,9 @@ def handle_query(global_query):
             speak("According to Wikipedia")
             speak(output)
         elif "open" in global_query:
-            global_query = global_query.replace("open", "")
+            global_query = global_query.replace("open", "").strip()
             speak(f"Opening {global_query}")
-            webbrowser.open(f"http://www.{global_query}.com")
+            subprocess.Popen(["xdg-open", f"http://www.{global_query}.com"])  # Linux example, adjust for your OS
         elif "the time" in global_query:
             hour = datetime.datetime.now().hour
             minute = datetime.datetime.now().minute
@@ -59,32 +60,24 @@ def handle_query(global_query):
         elif "play music on spotify" in global_query:
             webbrowser.open_new("https://open.spotify.com/")
         elif "play music" in global_query or 'play songs' in global_query:
-            songs = os.listdir("C:\\Users\\USER\\Music")
-            os.startfile(os.path.join("C:\\Users\\USER\\Music", songs[1]))
+            # Example: Open a music player
+            subprocess.Popen(["vlc"])  # Replace with your preferred media player command
         elif "launch vs code" in global_query or "launch visual studio code" in global_query:
             speak("Opening VS Code")
-            os.startfile("C:\\Users\\USER\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")
+            subprocess.Popen(["code"])  # Replace with your VS Code command if needed
         elif "launch calculator" in global_query:
             speak("Opening Calculator")
-            os.startfile('calc.exe')
+            subprocess.Popen(["gnome-calculator"])  # Replace with your calculator command
         elif "google" in global_query:
             txt = global_query.replace("google", "").strip()
             webbrowser.open(f"http://www.google.com/search?q={txt}")
         elif "launch notepad" in global_query:
             speak("Opening Notepad")
-            os.startfile('notepad.exe')
+            subprocess.Popen(["gedit"])  # Replace with your text editor command
             speak("Do you want to type anything?")
             response = sprec()
             if response and ("yes" in response or "sure" in response):
-                pyautogui.hotkey('win', 'h')
-        elif "launch settings" in global_query:
-            pyautogui.hotkey('win', 'i')
-        elif "launch explorer" in global_query or "launch my computer" in global_query or "launch this pc" in global_query:
-            pyautogui.hotkey('win', 'e')
-        elif "launch task manager" in global_query:
-            pyautogui.hotkey('ctrl', 'shift', 'escape')
-        elif "who are you" in global_query or "what can you do" in global_query:
-            speak("I am your virtual assistant. I can open apps, search for info, play music, and more. I am developed by Sasank.")
+                keyboard.press_and_release('win+h')
         elif "shutdown" in global_query:
             shutdown()
 
