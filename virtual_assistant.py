@@ -5,107 +5,91 @@ import speech_recognition as sr
 import wikipediaapi
 import webbrowser
 import os
-from pywinauto.application import Application
 
-def speak(var):
-    tts = pyttsx3.init()
-    tts.say(var)
-    tts.runAndWait()
+def speak(text):
+    engine = pyttsx3.init()
+    engine.say(text)
+    engine.runAndWait()
 
 def wish():
-    time_ = datetime.datetime.now().hour
-    if 0 <= time_ < 12:
-        speak("Good Morning Sasank")
-    elif 12 <= time_ < 16:
-        speak("Good Afternoon Sasank")
+    current_time = datetime.datetime.now().hour
+    if 0 <= current_time < 12:
+        speak("Good Morning")
+    elif 12 <= current_time < 16:
+        speak("Good Afternoon")
     else:
-        speak("Good Evening Sasank")
+        speak("Good Evening")
     speak("How can I help you?")
 
-def sprec():
-    rec = sr.Recognizer()
-    rec.pause_threshold = 1
-    with sr.Microphone() as roh:
+def recognize_speech():
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
         st.write("Listening...")
-        aud = rec.listen(roh)
+        audio = recognizer.listen(source)
+    
     try:
         st.write("Recognizing...")
-        query = rec.recognize_google(aud)
+        query = recognizer.recognize_google(audio)
         query = query.lower()
         st.write(f"You said: {query}")
         return query
-    except:
+    except sr.UnknownValueError:
         st.write("Sorry, I didn't get that")
         speak("Sorry, I didn't get that")
-        return None
+    except sr.RequestError:
+        st.write("Sorry, I'm having trouble with my speech recognition")
+        speak("Sorry, I'm having trouble with my speech recognition")
 
-def handle_query(global_query):
-    if global_query:
+def handle_query(query):
+    if query:
         wiki_wiki = wikipediaapi.Wikipedia('en')
-        if "wikipedia" in global_query:
+        if "wikipedia" in query:
             speak("Searching on Wikipedia...")
-            global_query = global_query.replace("wikipedia", "")
-            page = wiki_wiki.page(global_query)
+            query = query.replace("wikipedia", "")
+            page = wiki_wiki.page(query)
             if page.exists():
-                output = page.summary[:500]  # Get the first 500 characters of the summary
-                st.write(output)
+                summary = page.summary[:500]  # Limit summary to 500 characters
+                st.write(summary)
                 speak("According to Wikipedia")
-                speak(output)
+                speak(summary)
             else:
                 st.write("Wikipedia page not found")
                 speak("Wikipedia page not found")
-        elif "open" in global_query:
-            global_query = global_query.replace("open", "")
-            speak(f"Opening {global_query}")
-            webbrowser.open(f"http://www.{global_query}.com")
-        elif "the time" in global_query:
-            hour = datetime.datetime.now().hour
-            minute = datetime.datetime.now().minute
-            speak(f"It's {hour} {minute}")
-        elif "play music on spotify" in global_query:
-            webbrowser.open_new("https://open.spotify.com/")
-        elif "play music" in global_query or 'play songs' in global_query:
-            songs = os.listdir("C:\\Users\\USER\\Music")
-            os.startfile(os.path.join("C:\\Users\\USER\\Music", songs[1]))
-        elif "launch vs code" in global_query or "launch visual studio code" in global_query:
-            speak("Opening VS Code")
-            os.startfile("C:\\Users\\USER\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe")
-        elif "launch calculator" in global_query:
-            speak("Opening Calculator")
-            os.startfile('calc.exe')
-        elif "google" in global_query:
-            txt = global_query.replace("google", "").strip()
-            webbrowser.open(f"http://www.google.com/search?q={txt}")
-        elif "launch notepad" in global_query:
-            speak("Opening Notepad")
-            os.startfile('notepad.exe')
-            speak("Do you want to type anything?")
-            response = sprec()
-            if response and ("yes" in response or "sure" in response):
-                type_in_notepad()
-        elif "shutdown" in global_query:
-            shutdown()
-
-def type_in_notepad():
-    app = Application().start("notepad.exe")
-    main_dlg = app.window(title_re=".*Notepad")
-    main_dlg.type_keys("This text is typed by pywinauto!", with_spaces=True)
-
-def shutdown():
-    speak("Shutting down")
-    st.stop()
+        elif "open" in query:
+            query = query.replace("open", "")
+            speak(f"Opening {query}")
+            webbrowser.open(f"http://www.{query}.com")
+        elif "the time" in query:
+            current_time = datetime.datetime.now().strftime("%H:%M")
+            st.write(f"It's {current_time}")
+            speak(f"It's {current_time}")
+        elif "play music" in query or 'play songs' in query:
+            songs_dir = "C:\\Users\\USER\\Music"  # Replace with your music directory
+            if os.path.exists(songs_dir):
+                songs = os.listdir(songs_dir)
+                if songs:
+                    os.startfile(os.path.join(songs_dir, songs[0]))  # Play the first song
+                else:
+                    st.write("No music files found")
+                    speak("No music files found")
+            else:
+                st.write("Music directory not found")
+                speak("Music directory not found")
+        elif "shutdown" in query:
+            speak("Shutting down")
+            st.stop()
+        else:
+            st.write("Command not recognized")
+            speak("Command not recognized")
 
 def main():
-    st.title("Virtual Assistant by Sasank")
-    st.write("How can I help you?")
-    
+    st.title("Virtual Assistant")
+    st.write("How can I assist you today?")
+
     if st.button("Run Assistant"):
         wish()
-        global_query = sprec()
-        handle_query(global_query)
-    
-    if st.button("Shut down"):
-        shutdown()
+        query = recognize_speech()
+        handle_query(query)
 
 if __name__ == "__main__":
     main()
