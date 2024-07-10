@@ -5,7 +5,12 @@ import speech_recognition as sr
 import wikipediaapi
 import webbrowser
 import os
-import pyautogui
+
+try:
+    import pyautogui
+    pyautogui_available = True
+except ImportError:
+    pyautogui_available = False
 
 def speak(var):
     tts = pyttsx3.init()
@@ -82,13 +87,17 @@ def handle_query(global_query):
             speak("Do you want to type anything?")
             response = sprec()
             if response and ("yes" in response or "sure" in response):
-                pyautogui.hotkey('win', 'h')
-        elif "launch settings" in global_query:
-            pyautogui.hotkey('win', 'i')
-        elif "launch explorer" in global_query or "launch my computer" in global_query or "launch this pc" in global_query:
-            pyautogui.hotkey('win', 'e')
-        elif "launch task manager" in global_query:
-            pyautogui.hotkey('ctrl', 'shift', 'escape')
+                if pyautogui_available:
+                    pyautogui.hotkey('win', 'h')
+                else:
+                    speak("Sorry, typing feature is not available in this environment")
+        elif pyautogui_available:
+            if "launch settings" in global_query:
+                pyautogui.hotkey('win', 'i')
+            elif "launch explorer" in global_query or "launch my computer" in global_query or "launch this pc" in global_query:
+                pyautogui.hotkey('win', 'e')
+            elif "launch task manager" in global_query:
+                pyautogui.hotkey('ctrl', 'shift', 'escape')
         elif "who are you" in global_query or "what can you do" in global_query:
             speak("I am your virtual assistant. I can open apps, search for info, play music, and more. I am developed by Sasank.")
         elif "shutdown" in global_query:
