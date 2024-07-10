@@ -5,6 +5,7 @@ import speech_recognition as sr
 import wikipediaapi
 import webbrowser
 import os
+from pywinauto import Application
 
 def speak(var):
     tts = pyttsx3.init()
@@ -81,11 +82,14 @@ def handle_query(global_query):
             speak("Do you want to type anything?")
             response = sprec()
             if response and ("yes" in response or "sure" in response):
-                speak("Sorry, typing feature is not available in this environment")
-        elif "who are you" in global_query or "what can you do" in global_query:
-            speak("I am your virtual assistant. I can open apps, search for info, play music, and more. I am developed by Sasank.")
+                type_in_notepad()
         elif "shutdown" in global_query:
             shutdown()
+
+def type_in_notepad():
+    app = Application().start("notepad.exe")
+    main_dlg = app.window(title_re=".*Notepad")
+    main_dlg.type_keys("This text is typed by pywinauto!", with_spaces=True)
 
 def shutdown():
     speak("Shutting down")
