@@ -5,7 +5,7 @@ import speech_recognition as sr
 import wikipediaapi
 import webbrowser
 import os
-from pywinauto import Application
+from pywinauto.application import Application
 
 def speak(var):
     tts = pyttsx3.init()
